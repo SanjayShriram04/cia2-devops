@@ -21,7 +21,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                run 'mvn -B clean test'
+                runCmd 'mvn -B clean test'
             }
             post {
                 always {
@@ -32,26 +32,26 @@ pipeline {
 
         stage('Package') {
             steps {
-                run 'mvn -B package -DskipTests'
+                runCmd 'mvn -B package -DskipTests'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
 
         stage('Docker Build') {
             steps {
-                run "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                runCmd "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Deploy to Minikube') {
             steps {
-                run "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
-                run 'kubectl apply -f deployment.yaml'
-                run 'kubectl apply -f service.yaml'
+                runCmd "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
+                runCmd 'kubectl apply -f deployment.yaml'
+                runCmd 'kubectl apply -f service.yaml'
                 // The tag never changes, so force the pods to pick up the newly loaded image
-                run "kubectl rollout restart deployment/${APP_NAME}"
-                run "kubectl rollout status deployment/${APP_NAME} --timeout=120s"
-                run 'kubectl get deployments,pods,svc -o wide'
+                runCmd "kubectl rollout restart deployment/${APP_NAME}"
+                runCmd "kubectl rollout status deployment/${APP_NAME} --timeout=120s"
+                runCmd 'kubectl get deployments,pods,svc -o wide'
             }
         }
     }
@@ -67,7 +67,7 @@ pipeline {
 }
 
 // Runs a command with sh on Linux/macOS agents and bat on Windows agents
-def run(String cmd) {
+def runCmd(String cmd) {
     if (isUnix()) {
         sh cmd
     } else {
