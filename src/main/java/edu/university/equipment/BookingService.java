@@ -2,6 +2,7 @@ package edu.university.equipment;
 import java.util.*; import org.springframework.stereotype.Service;
 @Service
 public class BookingService {
+ private static final int MAX_QUANTITY_PER_BOOKING = 2;
  private final Map<String,Equipment> equipment=new LinkedHashMap<>(); private final Map<String,Booking> bookings=new LinkedHashMap<>();
  public BookingService(){equipment.put("LAPTOP01",new Equipment("LAPTOP01","Laptop","COMPUTING",10));equipment.put("PROJECTOR01",new Equipment("PROJECTOR01","Projector","PRESENTATION",4));equipment.put("TABLET01",new Equipment("TABLET01","Tablet","COMPUTING",8));}
  public synchronized List<Equipment> listEquipment(){return new ArrayList<>(equipment.values());}
@@ -11,6 +12,7 @@ public class BookingService {
   if(quantity<=0)throw new IllegalArgumentException("quantity must be positive");
   Equipment e=getEquipment(equipmentId);
   if(quantity > e.getAvailableQuantity()) throw new IllegalStateException("Requested quantity exceeds available inventory");
+  if(quantity > MAX_QUANTITY_PER_BOOKING) throw new IllegalArgumentException("quantity must not exceed 2 per booking");
   e.setAvailableQuantity(e.getAvailableQuantity()-quantity);
   Booking b=new Booking(UUID.randomUUID().toString(),borrower,equipmentId,quantity);bookings.put(b.getId(),b);return b;
  }
